@@ -5,6 +5,7 @@ metadata:
 spec:
   match:
     kinds:
+        # (NOTE) Fail: apiGroups: ["extensions/v1beta1"]
       - apiGroups: ["extensions"]
         kinds: ["Ingress"]
 
