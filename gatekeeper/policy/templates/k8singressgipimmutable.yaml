@@ -1,0 +1,41 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8singressgipimmutable
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sIngressGIPImmutable
+        listKind: K8sIngressGIPImmutableList
+        plural: K8sIngressGIPImmutable
+        singular: K8sIngressGIPImmutable
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            labels:
+              type: array
+              items: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredlabels
+
+        # forbit to create ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] = hoge
+        #violation[{"msg": msg, "details": {}}] {
+        violation[{"msg": msg}] {
+          operations := {"CREATE", "UPDATE"}
+          operations[input.review.operation]
+          gipName := input.review.object.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
+          gipName == "hoge"
+          msg := gipName
+        }
+
+        # forbit to update ingress.annotations['kubernetes.io/ingress.global-static-ip-name']
+        violation[{"msg": msg, "details": {"currentGIP": current, "provideGIP": provide}}] {
+          current := input.review.oldObject.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
+          provide := input.review.object.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
+          not current == provide
+          msg := "ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] is immutable field"
+        }
