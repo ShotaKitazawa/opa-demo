@@ -11,7 +11,7 @@ kubectl apply -f constraints/
 sleep 5
 
 set +e
-kubectl -n default apply -f ingress.yaml  # NG
-kubectl -n default apply -f <(cat ingress.yaml | perl -p -e 's|hoge|demo-gip-01|g')  # OK
-kubectl -n default apply -f <(cat ingress.yaml | perl -p -e 's|hoge|demo-gip-02|g')  # NG
+kubectl -n default apply -f ./manifests/ingress-demo-hoge.yaml # NG
+kubectl -n default apply -f ./manifests/ingress-demo-01.yaml   # OK
+kubectl -n default apply -f ./manifests/ingress-demo-02.yaml   # NG
 
