@@ -1,8 +1,9 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: K8sIngressGIPImmutable
 metadata:
-  name: ingress-gip-immutable
+  name: ingress-gip-immutable-dryrun
 spec:
+  enforcementAction: dryrun
   match:
     kinds:
         # (NOTE) Fail: apiGroups: ["extensions/v1beta1"]
