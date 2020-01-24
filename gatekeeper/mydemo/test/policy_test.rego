@@ -7,6 +7,13 @@ test_violation_gip_is_hoge {
   gip_is_hoge with input.review as mock
 }
 
+# admin ユーザならば GIP名に hoge を指定して CREATE しても成功することのテスト
+test_acception_gip_is_hoge_admin {
+  mock := {"object": {"metadata": {"annotations": {"kubernetes.io/ingress.global-static-ip-name": "hoge"}}}, "operation": "CREATE", "userInfo": {"username": "admin"}}
+
+  not gip_is_hoge with input.review as mock
+}
+
 # GIP名に fuga を指定して CREATE したときに成功することのテスト
 test_acception_gip_is_fuga {
   mock := {"object": {"metadata": {"annotations": {"kubernetes.io/ingress.global-static-ip-name": "fuga"}}}, "operation": "CREATE"}

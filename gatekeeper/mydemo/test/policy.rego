@@ -1,24 +1,19 @@
 package ingress_gip_validation
 
-### Violation Rules
+# admin ユーザであるかどうか
+admin_user {
+  username := input.review.userInfo.username
+  endswith(username, "admin")
+}
 
-# forbit to create ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] = hoge
+# ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] に hoge を指定した CREATE, UPDATE を禁止する
 violation[{"msg": msg}] {
   gip_is_hoge
   msg := "ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] must not be hoge"
 }
-
-# forbit to update ingress.annotations['kubernetes.io/ingress.global-static-ip-name']
-violation[{"msg": msg, "details": {"currentGIP": current, "provideGIP": provide}}] {
-  gip_is_updated
-  msg := "ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] must be immutable field"
-  current := input.review.oldObject.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
-  provide := input.review.object.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
-}
-
-### Functions
-
 gip_is_hoge {
+  not admin_user
+
   operation := input.review.operation
   operations := {"CREATE", "UPDATE"}
   operations[operation]
@@ -28,7 +23,16 @@ gip_is_hoge {
   gipName == "hoge"
 }
 
+# ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] の更新を禁止する
+violation[{"msg": msg, "details": {"currentGIP": current, "provideGIP": provide}}] {
+  gip_is_updated
+  msg := "ingress.annotations['kubernetes.io/ingress.global-static-ip-name'] must be immutable field"
+  current := input.review.oldObject.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
+  provide := input.review.object.metadata.annotations["kubernetes.io/ingress.global-static-ip-name"]
+}
 gip_is_updated {
+  not admin_user
+
   operation := input.review.operation
   operations := {"UPDATE"}
   operations[operation]
